@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>امتحان أحكام الاستعاذة والبسملة</title>
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --emerald:   #1a6b4a;
+    --emerald-mid: #22895f;
+    --emerald-light: #d4f0e3;
+    --gold:      #b8882a;
+    --gold-light: #f5e9cb;
+    --ink:       #1c1a16;
+    --paper:     #f7f4ee;
+    --white:     #ffffff;
+    --wrong:     #9b2335;
+    --wrong-bg:  #fce8ea;
+    --right:     #1a6b4a;
+    --right-bg:  #d4f0e3;
+    --border:    #c8c0a8;
+    --shadow:    rgba(28,26,22,.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── header ── */
+  header {
+    width: 100%;
+    background: var(--emerald);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 18px,
+      rgba(255,255,255,.04) 18px,
+      rgba(255,255,255,.04) 36px
+    );
+  }
+  .bismillah {
+    font-family: 'Scheherazade New', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    color: var(--gold-light);
+    letter-spacing: .05em;
+    margin-bottom: .6rem;
+    position: relative;
+  }
+  header h1 {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: #fff;
+    font-weight: 700;
+    position: relative;
+  }
+  header p {
+    color: rgba(255,255,255,.75);
+    font-size: .88rem;
+    margin-top: .35rem;
+    position: relative;
+  }
+
+  /* ── main container ── */
+  main {
+    width: 100%;
+    max-width: 760px;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  /* ── progress bar ── */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+  }
+  .progress-track {
+    flex: 1;
+    height: 7px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--emerald-mid);
+    border-radius: 10px;
+    transition: width .4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: .82rem;
+    color: var(--emerald);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── question card ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 4px 18px var(--shadow);
+  }
+
+  .q-category {
+    display: inline-block;
+    background: var(--gold-light);
+    color: var(--gold);
+    font-size: .78rem;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: .22rem .85rem;
+    margin-bottom: .9rem;
+    border: 1px solid #dfc990;
+  }
+
+  .q-text {
+    font-family: 'Scheherazade New', serif;
+    font-size: clamp(1.15rem, 2.8vw, 1.45rem);
+    line-height: 2;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── options ── */
+  .options { display: flex; flex-direction: column; gap: .65rem; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .85rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+    background: var(--paper);
+    text-align: right;
+  }
+  .option:hover:not(.locked) {
+    border-color: var(--emerald-mid);
+    background: var(--emerald-light);
+    transform: translateX(-3px);
+  }
+  .option.selected  { border-color: var(--emerald); background: var(--emerald-light); }
+  .option.correct   { border-color: var(--right);   background: var(--right-bg); }
+  .option.incorrect { border-color: var(--wrong);   background: var(--wrong-bg); }
+  .option.locked    { cursor: default; }
+
+  .opt-letter {
+    min-width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--emerald);
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: .1rem;
+    transition: background .2s;
+  }
+  .option.correct   .opt-letter { background: var(--right); }
+  .option.incorrect .opt-letter { background: var(--wrong); }
+
+  .opt-text {
+    font-family: 'Scheherazade New', serif;
+    font-size: 1.08rem;
+    line-height: 1.8;
+  }
+
+  /* ── feedback ── */
+  .feedback {
+    margin-top: 1.1rem;
+    padding: .9rem 1.1rem;
+    border-radius: 9px;
+    font-size: .93rem;
+    line-height: 1.7;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct   { background: var(--right-bg); color: #0e4a30; border-right: 4px solid var(--right); }
+  .feedback.incorrect { background: var(--wrong-bg); color: #6b0e1c; border-right: 4px solid var(--wrong); }
+
+  /* ── buttons ── */
+  .actions {
+    margin-top: 1.4rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: .75rem;
+  }
+  button {
+    font-family: 'Cairo', sans-serif;
+    font-size: .9rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: .65rem 1.5rem;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+  }
+  button:hover { opacity: .88; transform: translateY(-1px); }
+  .btn-confirm {
+    background: var(--emerald);
+    color: #fff;
+  }
+  .btn-next {
+    background: var(--gold);
+    color: #fff;
+  }
+  .btn-disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* ── results screen ── */
+  #results {
+    display: none;
+    text-align: center;
+  }
+  .score-circle {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 7px solid var(--emerald);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    background: var(--white);
+    box-shadow: 0 6px 24px var(--shadow);
+  }
+  .score-num {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--emerald);
+    line-height: 1;
+  }
+  .score-total { font-size: .88rem; color: #666; }
+  .result-title {
+    font-family: 'Scheherazade New', serif;
+    font-size: 1.7rem;
+    color: var(--emerald);
+    margin-bottom: .5rem;
+  }
+  .result-msg {
+    color: #555;
+    font-size: .95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+  }
+  .review-list { text-align: right; }
+  .review-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-bottom: .7rem;
+    background: var(--white);
+  }
+  .review-item .rq  { font-family: 'Scheherazade New', serif; font-size: 1.08rem; margin-bottom: .4rem; }
+  .review-item .ra  { font-size: .88rem; }
+  .review-item .ra span { font-weight: 700; }
+  .ra.ok  { color: var(--right); }
+  .ra.bad { color: var(--wrong); }
+
+  .btn-restart {
+    background: var(--emerald);
+    color: #fff;
+    padding: .75rem 2.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    margin-top: 1.5rem;
+  }
+
+  /* ── quiz screen ── */
+  #quiz { display: block; }
+
+  @media (max-width: 480px) {
+    header { padding: 1.5rem 1rem 1.2rem; }
+    .card  { padding: 1.25rem 1rem; }
+    .opt-text { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+  <h1>امتحان أحكام الاستعاذة والبسملة</h1>
+  <p>في علم التجويد والقراءات القرآنية</p>
+</header>
+
+<main>
+  <!-- Quiz screen -->
+  <div id="quiz">
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">1 / 15</span>
+    </div>
+
+    <div class="card" id="questionCard">
+      <span class="q-category" id="qCategory"></span>
+      <p class="q-text" id="qText"></p>
+      <div class="options" id="optionsContainer"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn-confirm btn-disabled" id="btnConfirm" onclick="confirmAnswer()">تأكيد الإجابة</button>
+        <button class="btn-next btn-disabled" id="btnNext" onclick="nextQuestion()">السؤال التالي ←</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results screen -->
+  <div id="results">
+    <div class="card">
+      <div class="score-circle">
+        <span class="score-num" id="scoreNum">0</span>
+        <span class="score-total" id="scoreTot">/ 15</span>
+      </div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-msg"  id="resultMsg"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
+      <h3 style="margin-bottom:.8rem;font-size:1rem;color:var(--emerald)">مراجعة الإجابات</h3>
+      <div class="review-list" id="reviewList"></div>
+      <div style="text-align:center">
+        <button class="btn-restart" onclick="restartQuiz()">إعادة الامتحان</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const questions = [
+  /* ──── الاستعاذة ──── */
+  {
+    cat: "الاستعاذة",
+    q: "ما الصيغة الكاملة للاستعاذة المختارة عند جمهور القراء؟",
+    opts: [
+      "أعوذ بالله من الشيطان",
+      "أعوذ بالله السميع العليم من الشيطان الرجيم",
+      "أعوذ بالله من الشيطان الرجيم",
+      "نعوذ بالله من الشيطان الرجيم"
+    ],
+    ans: 2,
+    exp: "الصيغة المختارة عند جمهور القراء هي: «أعوذ بالله من الشيطان الرجيم»، وهي المثبتة في الآية الكريمة (النحل:98)."
+  },
+  {
+    cat: "الاستعاذة",
+    q: "ما حكم الاستعاذة عند ابتداء قراءة القرآن الكريم؟",
+    opts: [
+      "واجبة",
+      "مستحبة سنة مؤكدة",
+      "مكروهة",
+      "فرض عين"
+    ],
+    ans: 1,
+    exp: "الاستعاذة مستحبة (سنة مؤكدة) عند ابتداء القراءة، وليست واجبة، وذلك لأمر الله تعالى بها في سورة النحل."
+  },
+  {
+    cat: "الاستعاذة",
+    q: "كيف تُقرأ الاستعاذة في حال الوصل بالبسملة وأول السورة؟",
+    opts: [
+      "يوقف بعد الاستعاذة وبعد البسملة",
+      "يوصل الجميع دون وقف",
+      "يوقف بعد الاستعاذة فقط",
+      "توجد أوجه متعددة كلها جائزة"
+    ],
+    ans: 3,
+    exp: "للقارئ أوجه متعددة جائزة في الوصل والوقف بين الاستعاذة والبسملة وأول السورة، كلها مقبولة عند أهل الأداء."
+  },
+  {
+    cat: "الاستعاذة",
+    q: "هل يُستعاذ عند ابتداء القراءة من وسط السورة؟",
+    opts: [
+      "لا، لأن الاستعاذة للبداية فقط",
+      "نعم، تُستحب الاستعاذة مطلقًا عند كل ابتداء",
+      "نعم لكن بصيغة مختلفة",
+      "لا تجوز الاستعاذة إلا من أول السورة"
+    ],
+    ans: 1,
+    exp: "يُستحب الاستعاذة عند كل ابتداء للقراءة سواء من أول السورة أو من وسطها، لأن المقصود التبرك والاستحضار قبل القراءة."
+  },
+  {
+    cat: "الاستعاذة",
+    q: "ما حكم الجهر بالاستعاذة في الصلاة السرية؟",
+    opts: [
+      "يجب الجهر بها دائمًا",
+      "يُسر بها لأن الصلاة سرية",
+      "لا تُقرأ في الصلاة",
+      "يخيَّر بين الجهر والإسرار"
+    ],
+    ans: 1,
+    exp: "في الصلاة السرية يُسر بالاستعاذة تبعًا لصفة الصلاة، أما في الصلاة الجهرية فيجهر بها الإمام."
+  },
+
+  /* ──── البسملة ──── */
+  {
+    cat: "البسملة",
+    q: "ما حكم البسملة بين السورتين عند حفص عن عاصم؟",
+    opts: [
+      "واجبة بين كل سورتين",
+      "جائزة (يخيَّر بين الإتيان بها وتركها) ما عدا بين الأنفال والتوبة",
+      "ممنوعة بين السور",
+      "واجبة إلا بين الأنفال والتوبة"
+    ],
+    ans: 1,
+    exp: "عند حفص: البسملة بين السور جائزة (ليست واجبة ولا ممنوعة) ما عدا ما بين الأنفال والتوبة فلا بسملة بينهما."
+  },
+  {
+    cat: "البسملة",
+    q: "لماذا لم تُكتب البسملة في أول سورة التوبة؟",
+    opts: [
+      "لأنها سورة قصيرة",
+      "نزلت بالسيف والعنف فناسب حذف البسملة التي تبدأ بالرحمة",
+      "لأنها مكية وليست مدنية",
+      "لأن الصحابة اختلفوا هل هي سورة مستقلة أم تكملة للأنفال"
+    ],
+    ans: 1,
+    exp: "السبب المشهور أن سورة التوبة نزلت في سياق البراءة والجهاد، فناسب حذف البسملة. وقيل أيضًا لشكّ الصحابة في استقلاليتها. والأول أرسخ."
+  },
+  {
+    cat: "البسملة",
+    q: "كم وجهًا للقراءة في أول السورة بعد الانتهاء من السورة السابقة (عند وجود البسملة)؟",
+    opts: ["وجه واحد فقط", "وجهان", "ثلاثة أوجه", "أربعة أوجه"],
+    ans: 2,
+    exp: "ثلاثة أوجه: (1) قطع الجميع، (2) وصل البسملة بالسورة الثانية مع قطع ما قبلها، (3) وصل الجميع. أما وصل آخر السورة بالبسملة وقطعها عن أول التالية فوجه ممنوع."
+  },
+  {
+    cat: "البسملة",
+    q: "ما الوجه الممنوع من الأوجه عند البدء بالبسملة بين السورتين؟",
+    opts: [
+      "الوقف على آخر السورة الأولى والبسملة معًا ثم البدء بالسورة الثانية",
+      "وصل آخر السورة بالبسملة والوقف عليها ثم البدء بالسورة الثانية",
+      "وصل الجميع بلا وقف",
+      "الوقف على آخر السورة الأولى ثم البسملة موصولة بالسورة الثانية"
+    ],
+    ans: 1,
+    exp: "الوجه الممنوع هو: وصل آخر السورة الأولى بالبسملة والوقف عليها وحدها دون الابتداء بالسورة الثانية، لأن ذلك يوهم أن البسملة من السورة الأولى وليست افتتاحًا للثانية."
+  },
+  {
+    cat: "البسملة",
+    q: "هل البسملة آية من الفاتحة عند حفص؟",
+    opts: [
+      "نعم، هي الآية الأولى منها قطعًا",
+      "لا، ليست آية منها",
+      "خلافية: وأداؤه يثبتها آية مستقلة في أول كل سورة",
+      "هي جزء من الآية الأولى"
+    ],
+    ans: 2,
+    exp: "المسألة خلافية بين العلماء. وحفص في أدائه يقرأ البسملة في أول كل سورة (ما عدا التوبة) على أنها آية مستقلة، لا من الفاتحة ولا من السورة، بل هي فاصلة بين السور."
+  },
+
+  /* ──── أحكام مشتركة ──── */
+  {
+    cat: "أحكام مشتركة",
+    q: "أيٌّ من العبارات التالية صحيحة بشأن ترتيب الاستعاذة والبسملة؟",
+    opts: [
+      "البسملة قبل الاستعاذة دائمًا",
+      "الاستعاذة أولًا ثم البسملة ثم القراءة",
+      "يجوز تقديم البسملة على الاستعاذة",
+      "لا ترتيب معين بينهما"
+    ],
+    ans: 1,
+    exp: "الترتيب المتفق عليه: الاستعاذة أولًا ثم البسملة ثم القراءة، لأن الاستعاذة استعداد للقراءة والبسملة افتتاح لها."
+  },
+  {
+    cat: "أحكام مشتركة",
+    q: "ما حكم قراءة الاستعاذة عند استئناف القراءة بعد الوقف للحديث أو السعال مثلًا؟",
+    opts: [
+      "لا تُعاد الاستعاذة مطلقًا",
+      "تُستحب إعادة الاستعاذة عند الابتداء من جديد",
+      "يجب إعادة الاستعاذة إذا طال الفصل",
+      "تُعاد الاستعاذة وتُعاد البسملة كذلك وجوبًا"
+    ],
+    ans: 1,
+    exp: "يُستحب إعادة الاستعاذة إذا قُطعت القراءة بكلام أجنبي أو فصل طويل، لأن المقصود الابتداء الجديد بالتعوذ."
+  },
+  {
+    cat: "البسملة",
+    q: "ما الحكم فيما بين سورتَي الأنفال والتوبة؟",
+    opts: [
+      "يُبسمَل بينهما كسائر السور",
+      "يوقف بينهما دون بسملة أو يُوصلان",
+      "يُستحب الوقف الطويل فقط",
+      "لا يجوز الوصل بينهما أبدًا"
+    ],
+    ans: 1,
+    exp: "بين الأنفال والتوبة: إما الوقف بينهما دون بسملة، أو الوصل مباشرة. ولا بسملة بينهما إجماعًا لعدم ثبوتها في المصاحف ولا في الأداء."
+  },
+  {
+    cat: "الاستعاذة",
+    q: "ما دليل مشروعية الاستعاذة من القرآن الكريم؟",
+    opts: [
+      "سورة البقرة آية 1",
+      "سورة النحل آية 98",
+      "سورة الفاتحة آية 5",
+      "سورة الناس آية 1"
+    ],
+    ans: 1,
+    exp: "الدليل هو قوله تعالى في سورة النحل (98): «فَإِذَا قَرَأْتَ الْقُرْآنَ فَاسْتَعِذْ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ»."
+  },
+  {
+    cat: "البسملة",
+    q: "كم مرة وردت البسملة في القرآن الكريم كاملةً بما فيها سورة النمل؟",
+    opts: ["112 مرة", "113 مرة", "114 مرة", "115 مرة"],
+    ans: 1,
+    exp: "وردت البسملة 114 مرة: في أوائل السور (113 سورة ما عدا التوبة) + مرة في الآية 30 من سورة النمل، المجموع = 114 مرة."
+  }
+];
+
+/* ── state ── */
+let current = 0, score = 0, chosen = -1, confirmed = false;
+const userAnswers = new Array(questions.length).fill(-1);
+
+function render() {
+  const q = questions[current];
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('qText').textContent = q.q;
+
+  const letters = ['أ','ب','ج','د'];
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.dataset.idx = i;
+    div.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text">${opt}</span>`;
+    div.onclick = () => selectOption(i);
+    container.appendChild(div);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').innerHTML = '';
+
+  const total = questions.length;
+  document.getElementById('progressFill').style.width = `${(current / total) * 100}%`;
+  document.getElementById('progressLabel').textContent = `${current + 1} / ${total}`;
+
+  chosen = -1; confirmed = false;
+  setBtn('btnConfirm', true, 'btn-confirm');
+  setBtn('btnNext', true, 'btn-next');
+  document.getElementById('btnConfirm').classList.add('btn-disabled');
+  document.getElementById('btnNext').classList.add('btn-disabled');
+}
+
+function selectOption(idx) {
+  if (confirmed) return;
+  chosen = idx;
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('btnConfirm').classList.remove('btn-disabled');
+}
+
+function confirmAnswer() {
+  if (chosen === -1 || confirmed) return;
+  confirmed = true;
+  userAnswers[current] = chosen;
+
+  const q = questions[current];
+  const isCorrect = chosen === q.ans;
+  if (isCorrect) score++;
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.add('locked');
+    if (i === q.ans) el.classList.add('correct');
+    else if (i === chosen && !isCorrect) el.classList.add('incorrect');
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct' : 'incorrect');
+  fb.innerHTML = (isCorrect ? '✅ إجابة صحيحة! ' : '❌ إجابة خاطئة. الصواب: «' + q.opts[q.ans] + '». ') + q.exp;
+
+  document.getElementById('btnConfirm').classList.add('btn-disabled');
+  document.getElementById('btnNext').classList.remove('btn-disabled');
+
+  if (current === questions.length - 1) {
+    document.getElementById('btnNext').textContent = 'عرض النتيجة ★';
+  }
+}
+
+function nextQuestion() {
+  if (!confirmed) return;
+  current++;
+  if (current >= questions.length) { showResults(); return; }
+  render();
+}
+
+function setBtn(id, show, cls) {
+  const btn = document.getElementById(id);
+  btn.className = cls;
+}
+
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  const res = document.getElementById('results');
+  res.style.display = 'block';
+
+  const total = questions.length;
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreTot').textContent = `/ ${total}`;
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = `${total} / ${total}`;
+
+  const pct = score / total;
+  let title, msg;
+  if (pct === 1)        { title = 'ممتاز 🌟'; msg = 'أحسنت! حصلت على أعلى الدرجات، وأتقنت أحكام الاستعاذة والبسملة بصورة مثالية.'; }
+  else if (pct >= 0.8)  { title = 'جيد جداً 👏'; msg = 'نتيجة رائعة! إلمامك بالأحكام كبير، وبمراجعة بسيطة ستصل إلى الكمال.'; }
+  else if (pct >= 0.6)  { title = 'جيد 📖'; msg = 'لديك أساس طيب. راجع الأسئلة التي أخطأت فيها وعُد للاختبار.'; }
+  else                   { title = 'يحتاج مراجعة 📝'; msg = 'لا بأس! راجع أحكام الاستعاذة والبسملة من مصدر موثوق وأعد الاختبار.'; }
+
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultMsg').textContent = msg;
+
+  const letters = ['أ','ب','ج','د'];
+  const list = document.getElementById('reviewList');
+  list.innerHTML = '';
+  questions.forEach((q, i) => {
+    const ua = userAnswers[i];
+    const ok = ua === q.ans;
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    div.innerHTML = `
+      <div class="rq">${i+1}. ${q.q}</div>
+      <div class="ra ${ok ? 'ok' : 'bad'}">
+        <span>${ok ? '✅ إجابتك صحيحة:' : '❌ الإجابة الصحيحة:'}</span>
+        ${ok ? q.opts[ua] : q.opts[q.ans]}
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function restartQuiz() {
+  current = 0; score = 0; chosen = -1; confirmed = false;
+  userAnswers.fill(-1);
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  render();
+}
+
+// init
+render();
+</script>
+</body>
+</html>
